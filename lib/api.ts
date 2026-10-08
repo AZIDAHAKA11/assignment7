@@ -2,20 +2,15 @@ import { unstable_noStore as noStore } from 'next/cache';
 import type { Product, Category } from './types';
 
 const API_BASE = 'https://api.abcz.workers.dev/api/bazardor';
-
-// Tell Next.js not to cache or prerender these fetches
 const FETCH_OPTIONS = { cache: 'no-store' as const };
 
 export async function getProducts(categorySlug?: string): Promise<Product[]> {
-  noStore(); // opt out of static rendering
-
+  noStore();
   const url = categorySlug
     ? `${API_BASE}/products?category=${categorySlug}`
     : `${API_BASE}/products`;
-
   const res = await fetch(url, FETCH_OPTIONS);
   if (!res.ok) throw new Error('Failed to fetch products');
-
   const data = await res.json();
   const raw = Array.isArray(data) ? data : data.products ?? data.data ?? [];
   return raw.map(normalizeProduct);
@@ -23,7 +18,6 @@ export async function getProducts(categorySlug?: string): Promise<Product[]> {
 
 export async function getProduct(idOrSlug: string): Promise<Product | null> {
   noStore();
-
   try {
     const res = await fetch(`${API_BASE}/products/${idOrSlug}`, FETCH_OPTIONS);
     if (res.ok) {
@@ -33,10 +27,7 @@ export async function getProduct(idOrSlug: string): Promise<Product | null> {
         return normalizeProduct(raw);
       }
     }
-  } catch {
-    // ignore, try fallback
-  }
-
+  } catch {}
   try {
     const all = await getProducts();
     const found = all.find(
@@ -50,7 +41,6 @@ export async function getProduct(idOrSlug: string): Promise<Product | null> {
 
 export async function getCategories(): Promise<Category[]> {
   noStore();
-
   const res = await fetch(`${API_BASE}/categories`, FETCH_OPTIONS);
   if (!res.ok) throw new Error('Failed to fetch categories');
   const data = await res.json();
@@ -60,7 +50,6 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getCategory(slug: string): Promise<Category | null> {
   noStore();
-
   try {
     const res = await fetch(`${API_BASE}/categories/${slug}`, FETCH_OPTIONS);
     if (!res.ok) return null;
@@ -72,19 +61,16 @@ export async function getCategory(slug: string): Promise<Category | null> {
   }
 }
 
-// ---- Normalizers ----
-
 function normalizeProduct(raw: any): Product {
   const changeObj =
     raw.change && typeof raw.change === 'object' ? raw.change : null;
-
   return {
     id: Number(raw.id ?? 0),
     slug: String(raw.slug ?? ''),
     nameBn: String(raw.nameBn ?? raw.name ?? ''),
     categorySlug: String(raw.category ?? raw.categorySlug ?? ''),
     categoryNameBn: String(raw.categoryNameBn ?? raw.categoryName ?? ''),
-    categoryIcon: String(raw.categoryIcon ?? '🏷️'),
+    categoryIcon: safeEmoji(String(raw.categoryIcon ?? '🏷️')),
     unit: String(raw.unit ?? 'kg'),
     emoji: safeEmoji(String(raw.image ?? raw.emoji ?? '🛒')),
     today: num(raw.today ?? 0),
@@ -109,7 +95,7 @@ function normalizeCategory(raw: any): Category {
   return {
     slug: String(raw.slug ?? ''),
     nameBn: String(raw.nameBn ?? raw.name ?? ''),
-    icon: String(raw.icon ?? raw.categoryIcon ?? '🏷️'),
+    icon: safeEmoji(String(raw.icon ?? raw.categoryIcon ?? '🏷️')),
     count: raw.count ?? raw.productCount ?? undefined,
   };
 }
@@ -119,11 +105,16 @@ function num(v: any): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/**
+ * Fallback emoji map for older Windows 10 systems that don't support Unicode 13+ emojis.
+ */
 function safeEmoji(emoji: string): string {
   const fallback: Record<string, string> = {
-    '🫘': '🥜',
-    '🫚': '🧄',
-    '🫙': '🥫',
+    '🫘': '🥜', // beans -> peanut
+    '🫚': '🧄', // ginger -> garlic
+    '🫙': '🥫', // jar -> canned food
+    '🫛': '🫛', // pea pod (keep — may or may not render)
+    '🫒': '🫒', // olive
   };
   return fallback[emoji] ?? emoji;
 }
