@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# বাজার দর (BazarDor)
 
-## Getting Started
+বাংলাদেশের দৈনন্দিন বাজারের পণ্যের দাম এক জায়গায় — চাল, ডাল, সবজি, মাছ, মাংস, তেল সহ সব প্রয়োজনীয় পণ্যের আজকের দর, বাজারভিত্তিক তুলনা সহ।
 
-First, run the development server:
+## Technologies Used
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS v4
+- BetterAuth (Email/Password authentication)
+- SQLite (better-sqlite3) — for user sessions
+- React Hot Toast — notifications
+- Lucide Icons
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+##  Key Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. আজকের বাজার দর হোম পেজ — Top 6 price risers (▲), top 6 fallers (▼), এবং সম্পূর্ণ পণ্যের গ্রিড, প্রতিটাতে আজকের দাম + change badge (Bengali numerals এ)।
+2. ক্যাটাগরি ব্রাউজিং + সর্টিং— চাল, ডাল, সবজি, মাছ ইত্যাদি ক্যাটাগরি অনুযায়ী পণ্য দেখা যায়, সাথে sort dropdown (ডিফল্ট / দাম: কম থেকে বেশি / দাম: বেশি থেকে কম)।
+3. বিস্তারিত পণ্য পেজ — বড় emoji, category tag, সর্বনিম্ন/সর্বোচ্চ/গড় দাম summary, এবং বাজারভিত্তিক দামের টেবিল (প্রতিটি জেলার বাজারে min/max দর)।
+4. BetterAuth দিয়ে Authentication — Email/Password সাইন-আপ ও সাইন-ইন, session management, protected routes (product detail page login ছাড়া দেখা যায় না)।
+5. আমার প্রোফাইল + তথ্য আপডেট — User নিজের নাম পরিবর্তন করতে পারে, live update database এ save হয়, toast notification সহ।
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+##  Design Highlights
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Figma-match UI — সবুজ primary theme (#16a34a), বাংলা typography (Hind Siliguri font)
+- Live price ticker — Navbar এর নিচে infinite scrolling marquee, hover করলে pause হয়
+- Fully responsive — Mobile, tablet, desktop সব size এ perfect
+- Bengali numerals — সব সংখ্যা বাংলা তে (১, ২, ৩...)
+- Loading skeletons — Data fetch এর সময় সুন্দর placeholder
+- Custom 404 page— বাংলা তে friendly error message
