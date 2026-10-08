@@ -1,15 +1,20 @@
 import { betterAuth } from 'better-auth';
-import Database from 'better-sqlite3';
-import path from 'path';
+import { Kysely } from 'kysely';
+import { LibsqlDialect } from '@libsql/kysely-libsql';
 
-// Vercel file system read-only, so use /tmp in production
-const dbPath =
-  process.env.NODE_ENV === 'production'
-    ? '/tmp/fitlog.db'
-    : path.join(process.cwd(), 'fitlog.db');
+// Turso (hosted SQLite) — works on Vercel
+const db = new Kysely({
+  dialect: new LibsqlDialect({
+    url: process.env.TURSO_DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN!,
+  }),
+});
 
 export const auth = betterAuth({
-  database: new Database(dbPath),
+  database: {
+    db,
+    type: 'sqlite',
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
@@ -20,8 +25,8 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     'http://localhost:3000',
-    process.env.BETTER_AUTH_URL || '',
-  ].filter(Boolean),
+    'https://assignment7-teal.vercel.app',
+  ],
 });
 
 export type Session = typeof auth.$Infer.Session;
