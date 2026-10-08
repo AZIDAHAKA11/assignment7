@@ -1,5 +1,6 @@
 import Hero from '@/components/Hero';
 import ProductSection from '@/components/ProductSection';
+import HomeAllProducts from '@/components/HomeAllProducts';
 import { getProducts } from '@/lib/api';
 import type { Product } from '@/lib/types';
 
@@ -12,19 +13,18 @@ export default async function HomePage() {
     products = [];
   }
 
-  // Top risers: change = "up", sort by pct descending, top 6
+  // Top risers
   const risers = products
     .filter((p) => p.change === 'up')
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 6);
 
-  // Top fallers: change = "down", sort by pct ascending (most negative first), top 6
+  // Top fallers
   const fallers = products
     .filter((p) => p.change === 'down')
     .sort((a, b) => a.pct - b.pct)
     .slice(0, 6);
 
-  // Fallback if not enough up/down products
   const risersFinal = risers.length > 0 ? risers : products.slice(0, 6);
   const fallersFinal =
     fallers.length > 0
@@ -49,12 +49,8 @@ export default async function HomePage() {
         products={fallersFinal}
       />
 
-      <ProductSection
-        id="সব-পণ্য"
-        title="সব পণ্য"
-        subtitle="প্রতিদিনের প্রয়োজনীয় সব পণ্যের আজকের দর"
-        products={products}
-      />
+      {/* সব পণ্য with sort dropdown */}
+      <HomeAllProducts products={products} />
     </>
   );
 }
