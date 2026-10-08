@@ -61,18 +61,51 @@ export async function getCategory(slug: string): Promise<Category | null> {
   }
 }
 
+// ============================================================
+// Category icon map — Windows 10 doesn't render Unicode 13+ emojis
+// so we hardcode safe alternatives by category slug.
+// ============================================================
+const CATEGORY_ICONS: Record<string, string> = {
+  chal: '\u{1F35A}',      // 🍚 rice
+  dal: '\u{1F95C}',       // 🥜 peanuts
+  tel: '\u{1F6E2}',       // 🛢 oil drum
+  shobji: '\u{1F96C}',    // 🥬 leafy green
+  mach: '\u{1F41F}',      // 🐟 fish
+  mangsho: '\u{1F357}',   // 🍗 poultry leg
+  'dim-dui': '\u{1F95B}', // 🥛 milk
+  mosla: '\u{1F336}',     // 🌶 hot pepper
+};
+
+// ============================================================
+// Product emoji fallbacks (for the same Windows 10 reason)
+// ============================================================
+const PRODUCT_EMOJI_FALLBACKS: Record<string, string> = {
+  '\u{1FAD8}': '\u{1F95C}', // 🫘 beans -> 🥜 peanut
+  '\u{1FADA}': '\u{1F9C4}', // 🫚 ginger -> 🧄 garlic
+  '\u{1FAD9}': '\u{1F96B}', // 🫙 jar -> 🥫 canned food
+};
+
 function normalizeProduct(raw: any): Product {
   const changeObj =
     raw.change && typeof raw.change === 'object' ? raw.change : null;
+
+  const rawEmoji = String(raw.image ?? raw.emoji ?? '\u{1F6D2}');
+  const safeProductEmoji =
+    PRODUCT_EMOJI_FALLBACKS[rawEmoji] ?? rawEmoji;
+
+  const catSlug = String(raw.category ?? raw.categorySlug ?? '');
+  const rawCatIcon = String(raw.categoryIcon ?? '\u{1F3F7}');
+  const safeCatIcon = CATEGORY_ICONS[catSlug] ?? rawCatIcon;
+
   return {
     id: Number(raw.id ?? 0),
     slug: String(raw.slug ?? ''),
     nameBn: String(raw.nameBn ?? raw.name ?? ''),
-    categorySlug: String(raw.category ?? raw.categorySlug ?? ''),
+    categorySlug: catSlug,
     categoryNameBn: String(raw.categoryNameBn ?? raw.categoryName ?? ''),
-    categoryIcon: safeEmoji(String(raw.categoryIcon ?? '🏷️')),
+    categoryIcon: safeCatIcon,
     unit: String(raw.unit ?? 'kg'),
-    emoji: safeEmoji(String(raw.image ?? raw.emoji ?? '🛒')),
+    emoji: safeProductEmoji,
     today: num(raw.today ?? 0),
     yesterday: num(raw.yesterday ?? 0),
     lastWeek: num(raw.lastWeek ?? 0),
@@ -92,10 +125,13 @@ function normalizeProduct(raw: any): Product {
 }
 
 function normalizeCategory(raw: any): Category {
+  const slug = String(raw.slug ?? '');
+  const rawIcon = String(raw.icon ?? raw.categoryIcon ?? '\u{1F3F7}');
+
   return {
-    slug: String(raw.slug ?? ''),
+    slug,
     nameBn: String(raw.nameBn ?? raw.name ?? ''),
-    icon: safeEmoji(String(raw.icon ?? raw.categoryIcon ?? '🏷️')),
+    icon: CATEGORY_ICONS[slug] ?? rawIcon,
     count: raw.count ?? raw.productCount ?? undefined,
   };
 }
@@ -103,18 +139,4 @@ function normalizeCategory(raw: any): Category {
 function num(v: any): number {
   const n = typeof v === 'string' ? parseFloat(v) : Number(v);
   return Number.isFinite(n) ? n : 0;
-}
-
-/**
- * Fallback emoji map for older Windows 10 systems that don't support Unicode 13+ emojis.
- */
-function safeEmoji(emoji: string): string {
-  const fallback: Record<string, string> = {
-    '🫘': '🥜', // beans -> peanut
-    '🫚': '🧄', // ginger -> garlic
-    '🫙': '🥫', // jar -> canned food
-    '🫛': '🫛', // pea pod (keep — may or may not render)
-    '🫒': '🫒', // olive
-  };
-  return fallback[emoji] ?? emoji;
 }
